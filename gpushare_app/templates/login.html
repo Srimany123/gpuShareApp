@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6 col-lg-5">
+    <div class="card shadow-sm p-4">
+      <h2 class="mb-4">Login</h2>
+      <form method="post" action="{{ url_for('auth.login') }}" class="needs-validation" novalidate>
+        <div class="mb-3">
+          <label for="email" class="form-label">Email address</label>
+          <input type="email" class="form-control" id="email" name="email" placeholder="user@example.com" required>
+          <div class="invalid-feedback">Please enter a valid email.</div>
+        </div>
+        <div class="mb-3">
+          <label for="password" class="form-label">Password</label>
+          <input type="password" class="form-control" id="password" name="password" required>
+          <div class="invalid-feedback">Please enter your password.</div>
+        </div>
+        <div class="mb-3">
+          <label for="token" class="form-label">Login Token</label>
+          <input type="text" class="form-control" id="token" name="token" maxlength="8" placeholder="8‑character token" required>
+          <div class="form-text">This token was emailed to you when you registered. If you've lost it you can re‑register or contact support.</div>
+          <div class="invalid-feedback">Token is required.</div>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Request OTP</button>
+        <p class="mt-3 text-center">Don't have an account? <a href="{{ url_for('auth.register') }}">Register here</a>.</p>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+// Enable Bootstrap client-side validation
+(function () {
+  'use strict'
+  const forms = document.querySelectorAll('.needs-validation')
+  Array.from(forms).forEach(form => {
+    form.addEventListener('submit', event => {
+      if (!form.checkValidity()) {
+        event.preventDefault()
+        event.stopPropagation()
+      }
+      form.classList.add('was-validated')
+    }, false)
+  })
+})()
+</script>
+{% endblock %}

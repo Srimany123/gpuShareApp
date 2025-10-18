@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8 col-lg-6">
+    <div class="card shadow-sm p-4">
+      <h2 class="mb-3">GPU Registration Disabled</h2>
+      <p class="mb-0">GPU registration cannot be performed via the web interface. Please run the GPUShare host agent script on your machine to register a GPU. After it connects, it will appear in your "My Hosted GPUs" list.</p>
+      <div class="mt-3">
+        <a href="{{ url_for('gpu.my_gpu') }}" class="btn btn-primary">Back to My GPUs</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6 col-lg-5">
+    <div class="card shadow-sm p-4">
+      <h2 class="mb-3">Enter OTP</h2>
+      <p>Please enter the 6‑digit code sent to your email.</p>
+      <form method="post" action="{{ url_for('auth.verify_otp') }}" class="needs-validation" novalidate>
+        <div class="mb-3">
+          <label for="otp" class="form-label">One‑Time Password</label>
+          <input type="text" class="form-control" id="otp" name="otp" maxlength="6" required>
+          <div class="invalid-feedback">OTP is required.</div>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Verify OTP</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+// Enable Bootstrap client-side validation
+(function () {
+  'use strict'
+  const forms = document.querySelectorAll('.needs-validation')
+  Array.from(forms).forEach(form => {
+    form.addEventListener('submit', event => {
+      if (!form.checkValidity()) {
+        event.preventDefault()
+        event.stopPropagation()
+      }
+      form.classList.add('was-validated')
+    }, false)
+  })
+})()
+</script>
+{% endblock %}

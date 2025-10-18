@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en" data-bs-theme="light" id="htmlRoot">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>GPUShare</title>
+    <!-- Bootswatch themes -->
+    <!--
+      We load a Bootswatch theme for the current mode (light/dark).  Flatly
+      provides a fresh, modern look for light mode, while Darkly is a stylish
+      dark theme.  The <link> element’s href is updated via JavaScript
+      depending on the user’s selected theme.
+    -->
+    <link id="themeStyle" rel="stylesheet" href="">
+    <!-- Custom theme overrides -->
+    <style>
+      /* Base typography.  Colours are handled by the loaded Bootswatch theme. */
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.5;
+      }
+
+      /* Card styling: add gentle rounding and subtle shadows for a cleaner look */
+      .card {
+        background-color: var(--bs-light);
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+      }
+      [data-bs-theme='dark'] .card {
+        background-color: #1e1e1e;
+        border-color: #444;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.5);
+      }
+
+      /* Table header styling: provide a distinct background in both themes */
+      table thead th {
+        background-color: var(--bs-light);
+        vertical-align: middle;
+      }
+      [data-bs-theme='dark'] table thead th {
+        background-color: #2a2a2a;
+      }
+    </style>
+  </head>
+  <body>
+    <!--
+      The navigation bar adapts to the selected theme (light or dark).
+      When the theme toggle is clicked the script below will switch
+      between "navbar-dark bg-dark" and "navbar-light bg-light" to
+      ensure proper contrast.  See the theme toggle script at the
+      bottom of this file for details.
+    -->
+    <nav id="navbar" class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="{{ url_for('auth.index') }}">GPUShare</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+          aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            {% if current_user.is_authenticated %}
+              <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.index') }}">Home</a></li>
+              <li class="nav-item"><a class="nav-link" href="{{ url_for('gpu.my_gpu') }}">My Hosted GPU</a></li>
+              <li class="nav-item"><a class="nav-link" href="{{ url_for('gpu.available_gpus') }}">Available GPUs</a></li>
+              <li class="nav-item"><a class="nav-link" href="{{ url_for('gpu.my_requests') }}">My Requests</a></li>
+              {% if current_user.role in ['admin', 'superadmin'] %}
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.dashboard') }}">Admin</a></li>
+              {% endif %}
+              <li class="nav-item"><a class="nav-link" href="{{ url_for('tokens.manage_tokens') }}">API Tokens</a></li>
+              <li class="nav-item"><span class="navbar-text me-3">Hello, {{ current_user.username }} ({{ current_user.role }})</span></li>
+              <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.logout') }}">Logout</a></li>
+            {% else %}
+              <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.login') }}">Login</a></li>
+              <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.register') }}">Register</a></li>
+            {% endif %}
+            <!-- Theme toggle always visible.  The button style is
+                 neutral to work in both light and dark modes. -->
+            <li class="nav-item">
+              <button class="btn btn-sm btn-outline-secondary" id="themeToggle" title="Toggle light/dark mode">🌓</button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <div class="container mt-4">
+      <!-- Flash messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ 'success' if category=='success' else 'danger' if category=='danger' else 'info' }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-ENjdO4Dr2bkBIFxQpeoA7hWALePrZfHG9lwLTVq5K6V4gYUZCSLDfqXG7ly4E3P"
+      crossorigin="anonymous"></script>
+
+    <!-- Theme toggle script
+         ------------------------------------------------------------------
+         This script applies the selected theme (light or dark) to both
+         the document root (via the data-bs-theme attribute) and the
+         navigation bar.  It reads and writes the current theme from
+         localStorage to persist the user's preference across sessions.  To
+         customise the appearance further, edit the applyNavbarTheme
+         function below.
+    -->
+    <script>
+      (function() {
+        const root = document.getElementById('htmlRoot');
+        const navbar = document.getElementById('navbar');
+        const themeLink = document.getElementById('themeStyle');
+
+        // URLs for Bootswatch themes
+        const THEMES = {
+          light: 'https://cdn.jsdelivr.net/npm/bootswatch@5.3.0/dist/flatly/bootstrap.min.css',
+          dark:  'https://cdn.jsdelivr.net/npm/bootswatch@5.3.0/dist/darkly/bootstrap.min.css'
+        };
+
+        /**
+         * Apply the proper navbar classes and Bootswatch stylesheet for a given theme.
+         * Also update the data-bs-theme attribute on the root element.
+         * @param {string} theme 'light' or 'dark'
+         */
+        function applyTheme(theme) {
+          root.setAttribute('data-bs-theme', theme);
+          // Update Bootstrap navbar classes for contrast
+          if (navbar) {
+            if (theme === 'dark') {
+              navbar.classList.remove('navbar-light', 'bg-light');
+              navbar.classList.add('navbar-dark', 'bg-dark');
+            } else {
+              navbar.classList.remove('navbar-dark', 'bg-dark');
+              navbar.classList.add('navbar-light', 'bg-light');
+            }
+          }
+          // Update the stylesheet href
+          if (themeLink) {
+            themeLink.setAttribute('href', THEMES[theme]);
+          }
+        }
+        // Determine initial theme
+        const storedTheme = localStorage.getItem('theme') || 'light';
+        applyTheme(storedTheme);
+        // Toggle on button click
+        const toggleButton = document.getElementById('themeToggle');
+        if (toggleButton) {
+          toggleButton.addEventListener('click', () => {
+            const current = root.getAttribute('data-bs-theme') === 'dark' ? 'dark' : 'light';
+            const nextTheme = current === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('theme', nextTheme);
+            applyTheme(nextTheme);
+          });
+        }
+      })();
+    </script>
+  </body>
+</html>

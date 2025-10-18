@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Admin Dashboard</h2>
+
+<h3 class="mb-2">Users</h3>
+<div class="card shadow-sm mb-4">
+  <div class="card-body p-0">
+<table class="table table-bordered table-striped table-hover mb-0">
+  <thead class="table-light">
+    <tr>
+      <th>ID</th>
+      <th>Username</th>
+      <th>Email</th>
+      <th>Role</th>
+      <th>Active</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for user in users %}
+      <tr>
+        <td>{{ user.id }}</td>
+        <td>{{ user.username }}</td>
+        <td>{{ user.email }}</td>
+        <td>
+          {% if user.role == 'superadmin' %}
+            <span class="badge bg-danger">Superadmin</span>
+          {% elif user.role == 'admin' %}
+            <span class="badge bg-primary">Admin</span>
+          {% elif user.role == 'moderator' %}
+            <span class="badge bg-info text-dark">Moderator</span>
+          {% else %}
+            <span class="badge bg-secondary">Client</span>
+          {% endif %}
+        </td>
+        <td>{{ 'Yes' if user.active else 'No' }}</td>
+        <td>
+          {% if current_user.id != user.id %}
+            {% if user.role == 'client' %}
+              <a href="{{ url_for('admin.make_moderator', user_id=user.id) }}" class="btn btn-sm btn-outline-primary">Make Moderator</a>
+              <a href="{{ url_for('admin.make_admin', user_id=user.id) }}" class="btn btn-sm btn-outline-success">Make Admin</a>
+              <a href="{{ url_for('admin.ban_user', user_id=user.id) }}" class="btn btn-sm btn-outline-danger">Ban</a>
+            {% elif user.role == 'moderator' %}
+              <a href="{{ url_for('admin.demote_user', user_id=user.id) }}" class="btn btn-sm btn-outline-warning">Demote to Client</a>
+              <a href="{{ url_for('admin.make_admin', user_id=user.id) }}" class="btn btn-sm btn-outline-success">Make Admin</a>
+              <a href="{{ url_for('admin.ban_user', user_id=user.id) }}" class="btn btn-sm btn-outline-danger">Ban</a>
+            {% elif user.role == 'admin' %}
+              {% if current_user.role == 'superadmin' %}
+                <a href="{{ url_for('admin.demote_user', user_id=user.id) }}" class="btn btn-sm btn-outline-warning">Demote to Moderator</a>
+                <a href="{{ url_for('admin.ban_user', user_id=user.id) }}" class="btn btn-sm btn-outline-danger">Ban</a>
+              {% else %}
+                <a href="{{ url_for('admin.demote_user', user_id=user.id) }}" class="btn btn-sm btn-outline-warning">Request Demotion</a>
+                <a href="{{ url_for('admin.ban_user', user_id=user.id) }}" class="btn btn-sm btn-outline-danger">Request Ban</a>
+              {% endif %}
+            {% endif %}
+          {% else %}
+            <span class="text-muted">-</span>
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+  </div>
+</div>
+
+<h3 class="mb-2">Hosted GPUs</h3>
+<div class="card shadow-sm mb-4">
+  <div class="card-body p-0">
+<table class="table table-bordered mb-0">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>Host</th>
+      <th>Connected</th>
+      <th>Idle</th>
+      <th>Usage (s)</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for gpu in gpus %}
+      <tr>
+        <td>{{ gpu.id }}</td>
+        <td>{{ gpu.name }}</td>
+        <td>{{ gpu.host_user.username }}</td>
+        <td>{{ 'Yes' if gpu.connected else 'No' }}</td>
+        <td>{{ 'Idle' if gpu.idle else 'Busy' }}</td>
+        <td>{{ gpu.usage_time|int }}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+  </div>
+</div>
+
+{% if approval_requests is defined and approval_requests %}
+  <h3 class="mt-4 mb-2">Pending Approval Requests</h3>
+  <div class="card shadow-sm mb-4">
+    <div class="card-body p-0">
+  <table class="table table-bordered table-striped mb-0">
+    <thead class="table-light">
+      <tr>
+        <th>ID</th>
+        <th>Action</th>
+        <th>Requester</th>
+        <th>Target User</th>
+        <th>Status</th>
+        <th>Submitted</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for req in approval_requests %}
+        <tr>
+          <td>{{ req.id }}</td>
+          <td>{{ req.action.replace('_', ' ').title() }}</td>
+          <td>{{ req.requester.username }}</td>
+          <td>{{ req.target_user.username }}</td>
+          <td>{{ req.status.title() }}</td>
+          <td>{{ req.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+          <td>
+            <a href="{{ url_for('admin.approve_request', request_id=req.id) }}" class="btn btn-sm btn-outline-success">Approve</a>
+            <a href="{{ url_for('admin.deny_request', request_id=req.id) }}" class="btn btn-sm btn-outline-danger">Deny</a>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+    </div>
+  </div>
+{% endif %}
+{% endblock %}

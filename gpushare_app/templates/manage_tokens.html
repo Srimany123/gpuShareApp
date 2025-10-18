@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2 class="mb-3">Manage API Tokens</h2>
+
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">Your Active Tokens</h5>
+        {% if tokens|length == 0 %}
+          <p class="card-text">You have no active tokens.</p>
+        {% else %}
+          <div class="table-responsive">
+            <table class="table table-bordered table-striped mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>ID</th>
+                  <th>Token</th>
+                  <th>Created At</th>
+                  <th>Expires At</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="tokenTable">
+                {% for tok in tokens %}
+                  <tr data-id="{{ tok.id }}">
+                    <td>{{ tok.id }}</td>
+                    <td><code>{{ tok.token }}</code></td>
+                    <td>{{ tok.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    <td>{{ tok.expires_at.strftime('%Y-%m-%d %H:%M:%S') if tok.expires_at else 'Never' }}</td>
+                    <td><button class="btn btn-sm btn-outline-danger" onclick="revokeToken({{ tok.id }})">Revoke</button></td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">Create a New Token</h5>
+        <p class="card-text">Specify an optional expiry in hours. Leave blank for a token that never expires.</p>
+        <form id="createTokenForm" onsubmit="event.preventDefault(); createToken();" class="row g-3 align-items-center">
+          <div class="col-12 col-sm-8">
+            <label for="expiresHours" class="form-label">Expires in (hours)</label>
+            <input type="number" id="expiresHours" class="form-control" min="1" placeholder="Leave blank for no expiry">
+          </div>
+          <div class="col-12 col-sm-4 d-flex align-items-end">
+            <button type="submit" class="btn btn-success w-100">Create Token</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+async function revokeToken(tokId) {
+  const response = await fetch(`{{ url_for('tokens.revoke_token', token_id=0) }}`.replace('0', tokId), {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' }
+  });
+  if (response.ok) {
+    const row = document.querySelector(`tr[data-id='${tokId}']`);
+    if (row) row.remove();
+    alert('Token revoked');
+  } else {
+    alert('Failed to revoke token');
+  }
+}
+
+async function createToken() {
+  const hoursVal = document.getElementById('expiresHours').value;
+  const body = {};
+  if (hoursVal) {
+    body.expires_in = { hours: parseInt(hoursVal) };
+  }
+  const response = await fetch(`{{ url_for('tokens.create_token') }}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (response.ok) {
+    const data = await response.json();
+    // Append new token to the table
+    const table = document.getElementById('tokenTable');
+    const row = document.createElement('tr');
+    row.setAttribute('data-id', data.id);
+    row.innerHTML = `
+      <td>${data.id}</td>
+      <td><code>${data.token}</code></td>
+      <td>${data.created_at.replace('T', ' ').replace('Z','')}</td>
+      <td>${data.expires_at ? data.expires_at.replace('T', ' ').replace('Z','') : 'Never'}</td>
+      <td><button class="btn btn-sm btn-outline-danger" onclick="revokeToken(${data.id})">Revoke</button></td>
+    `;
+    if (table) {
+      table.prepend(row);
+    }
+    document.getElementById('expiresHours').value = '';
+    alert('Token created');
+  } else {
+    alert('Failed to create token');
+  }
+}
+</script>
+{% endblock %}

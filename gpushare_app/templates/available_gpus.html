@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2 class="mb-3">Available GPUs</h2>
+<form method="get" action="{{ url_for('gpu.available_gpus') }}" class="row g-3 align-items-center mb-4">
+  <div class="col-sm-8">
+    <input type="text" class="form-control" name="q" placeholder="Search GPUs" value="{{ query }}">
+  </div>
+  <div class="col-sm-auto">
+    <button type="submit" class="btn btn-outline-primary">Search</button>
+  </div>
+</form>
+{% if gpus|length == 0 %}
+  <div class="alert alert-info">No GPUs are available for request at this time.</div>
+{% else %}
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    {% for gpu in gpus %}
+      <div class="col">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body d-flex flex-column">
+            <h5 class="card-title">{{ gpu.name }}</h5>
+            <p class="card-text mb-3">
+              <strong>ID:</strong> {{ gpu.id }}<br>
+              <strong>Host:</strong> {{ gpu.host_user.username }}<br>
+              <strong>Status:</strong>
+              {% if (gpu.connected and not gpu.idle) %}
+                <span class="badge bg-success">Active</span>
+              {% else %}
+                <span class="badge bg-secondary">Idle</span>
+              {% endif %}
+            </p>
+            <div class="mt-auto">
+              <a href="{{ url_for('gpu.request_gpu', gpu_id=gpu.id) }}" class="btn btn-primary w-100">Request Access</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mb-3">
+  <h2>My Hosted GPUs</h2>
+</div>
+{% if gpus|length == 0 %}
+  <div class="alert alert-info">You are not hosting any GPUs at the moment. To register a GPU, run the GPUShare host agent script on the machine that has your GPU.</div>
+{% else %}
+  <table class="table table-bordered table-hover">
+    <thead class="table-light">
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Connected</th>
+        <th>Status</th>
+        <th>Usage (s)</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for gpu in gpus %}
+        <tr>
+          <td>{{ gpu.id }}</td>
+          <td>{{ gpu.name }}</td>
+          <td>{{ 'Yes' if gpu.connected else 'No' }}</td>
+          <td>
+            {% if gpu.idle %}
+              <span class="badge bg-secondary">Idle</span>
+            {% else %}
+              <span class="badge bg-success">Active</span>
+            {% endif %}
+          </td>
+          <td>{{ gpu.usage_time|int }}</td>
+          <td>
+            <a class="btn btn-sm btn-outline-info" href="{{ url_for('gpu.gpu_requests', gpu_id=gpu.id) }}">View Requests</a>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endif %}
+{% endblock %}

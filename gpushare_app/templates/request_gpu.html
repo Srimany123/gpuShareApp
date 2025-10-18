@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8 col-md-10">
+    <div class="card shadow-sm p-4">
+      <h2 class="mb-3">Request Access to {{ gpu.name }}</h2>
+      <p class="mb-4">Provide any code you wish to run on this GPU. Your code will be scanned for safety. You may paste Python code in the textarea or upload a <code>.py</code> file. Leaving both fields blank submits your request without code.</p>
+      <form method="post" enctype="multipart/form-data" action="{{ url_for('gpu.request_gpu', gpu_id=gpu.id) }}" class="needs-validation" novalidate>
+        <div class="mb-3">
+          <label for="code" class="form-label">Paste Code (optional)</label>
+          <textarea class="form-control" id="code" name="code" rows="6" placeholder="Paste Python code here"></textarea>
+        </div>
+        <div class="mb-3">
+          <label for="code_file" class="form-label">Or Upload File (optional)</label>
+          <input class="form-control" type="file" id="code_file" name="code_file" accept=".py">
+        </div>
+        <div class="d-flex justify-content-between">
+          <a href="{{ url_for('gpu.available_gpus') }}" class="btn btn-secondary">Cancel</a>
+          <button type="submit" class="btn btn-success">Submit Request</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+// Enable Bootstrap validation for fileless forms (no required fields)
+(function () {
+  'use strict'
+  const forms = document.querySelectorAll('.needs-validation')
+  Array.from(forms).forEach(form => {
+    form.addEventListener('submit', event => {
+      form.classList.add('was-validated')
+    }, false)
+  })
+})()
+</script>
+{% endblock %}

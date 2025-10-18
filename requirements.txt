@@ -1,0 +1,13 @@
+Flask>=2.3
+Flask-Login>=0.6
+Flask-Mail>=0.9
+Flask-SQLAlchemy>=3.0
+python-dateutil>=2.8
+python-dotenv>=1.0
+requests>=2.31
+# Optional: database driver for PostgreSQL.  This allows connecting to
+# a PostgreSQL server when you set DATABASE_URL to a postgresql URI.
+psycopg2-binary>=2.9
+# Optional dependencies for cloud storage (uncomment if using these providers)
+# google-cloud-storage>=2.14
+# boto3>=1.34

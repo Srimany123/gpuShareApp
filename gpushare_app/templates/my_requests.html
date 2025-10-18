@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2 class="mb-3">My Access Requests</h2>
+{% if requests|length == 0 %}
+  <div class="alert alert-info">You have not submitted any access requests yet.</div>
+{% else %}
+  <div class="card shadow-sm">
+    <div class="card-body p-0">
+      <table class="table table-bordered table-striped mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Request ID</th>
+            <th>GPU</th>
+            <th>Status</th>
+            <th>Requested At</th>
+            <th>Expires At</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for req in requests %}
+            <tr>
+              <td>{{ req.id }}</td>
+              <td>{{ req.gpu.name }} (ID {{ req.gpu_id }})</td>
+              <td>
+                {% if req.status == 'approved' %}
+                  <span class="badge bg-success">Approved</span>
+                {% elif req.status == 'denied' %}
+                  <span class="badge bg-danger">Denied</span>
+                {% elif req.status == 'requested' %}
+                  <span class="badge bg-warning text-dark">Pending</span>
+                {% else %}
+                  {{ req.status|capitalize }}
+                {% endif %}
+              </td>
+              <td>{{ req.request_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+              <td>{{ req.access_expires.strftime('%Y-%m-%d %H:%M:%S') if req.access_expires else 'N/A' }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endif %}
+{% endblock %}
