@@ -208,7 +208,7 @@ Now for the fun part of bringing your GPU online!  The host agent script starts 
 1. **Copy the agent to your GPU machine.**  The script is self‑contained, but it does require Python 3 and the `requests` and `GPUtil` packages (`pip install requests gputil`).
 2. **Launch the script.**  Run it with Python.  A Tkinter window titled **“GPUShare Agent Controller + Execution Agent”** appears (see screenshot below).  It looks like this:
 
-![GPUShare Agent Controller GUI]({{file:clientAgentGUI.png}})
+![GPUShare Agent Controller GUI](./clientAgentGUI.png)
 
 3. **Enter your server URL.**  This should point to your GPUShare server, e.g. `https://gpushare.srimanhq.com`.  There’s a handy **Ping Server** button that pings the hostname and tells you if it’s reachable.
 4. **Paste your API token.**  You can generate an API token from the web UI under **API Tokens**.  Copy it, paste it into the **API Token** field and click **Validate**.  If the token is valid you’ll see a green **Status** message and the **Start Host Agent** button will enable.
